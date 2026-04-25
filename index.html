@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3D Group</title>
-<link rel="preconnect" href="https://fonts.googles.com">
-<link href="https://fonts.googles.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 /* ============================================================
@@ -197,7 +197,7 @@ tr:hover td{background:var(--surface2)}
 // ============================================================
 // IMPORTANTE: Reemplaza esta URL con la URL de tu Web App de Apps Script
 // La obtienes en: Implementar → Gestionar implementaciones → URL
-const API_URL = 'https://script.google.com/macros/s/AKfycby-FtE9zpOMERNnAjBoijGZOWa5oc5Vf8sJ-HULZr_Oi8YN50PtMUTz9Mshc0mffYKy/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycby-FtE9zpOMERNnAjBoijGZ0Wa5oc5Vf8sJ-HULZr_0i8YN50PtMUTz9Mshc0mffYKy/exec';
 
 const IVA    = 0.19;
 const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -226,10 +226,10 @@ let S = {
 let chartInst = null, chartInst2 = null;
 
 // ============================================================
-//   CALLS
+//  API CALLS
 // ============================================================
-async function (action, data={}) {
-  const resp = await fetch(_URL, {
+async function api(action, data={}) {
+  const resp = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({ action, data }),
@@ -694,7 +694,7 @@ async function checkPin() {
   const pin=document.getElementById('pin-input')?.value;
   if(!pin){S.pinError=true;render();return}
   try {
-    const r=await ('verificarPin',{pin});
+    const r=await api('verificarPin',{pin});
     if(r.valid){S.screen='dashboard';S.pinError=false;S.user='Diego';loadAll()}
     else{S.pinError=true;render()}
   } catch(e){S.pinError=true;render()}
@@ -704,8 +704,8 @@ function setTab(t){S.tab=t;render()}
 
 async function loadAll() {
   S.loading=true;render();
-  try{const g=await ('getGastos');S.gastos=Array.isArray(g)?g:[]}catch(e){S.gastos=[];toast('Error gastos: '+e.message)}
-  try{const i=await ('getIngresos');S.ingresos=Array.isArray(i)?i:[]}catch(e){S.ingresos=[];toast('Error ingresos: '+e.message)}
+  try{const g=await api('getGastos');S.gastos=Array.isArray(g)?g:[]}catch(e){S.gastos=[];toast('Error gastos: '+e.message)}
+  try{const i=await api('getIngresos');S.ingresos=Array.isArray(i)?i:[]}catch(e){S.ingresos=[];toast('Error ingresos: '+e.message)}
   S.loading=false;render();
 }
 
@@ -727,7 +727,7 @@ async function saveGasto() {
   const rec={fecha:document.getElementById('m-fecha')?.value||'',desc,cat:document.getElementById('m-cat')?.value||'Otro',
     mes:parseInt(document.getElementById('m-mes')?.value),anio:S.gAnio,monto,aplicaIva,
     tipo:document.querySelector('input[name="tipo"]:checked')?.value||'fijo',autor:S.user};
-  try{const r=await ('addGasto',rec);rec.id=r?.id||uid();S.gastos.push(rec);S.modal=null;toast('Gasto registrado ✓');render()}
+  try{const r=await api('addGasto',rec);rec.id=r?.id||uid();S.gastos.push(rec);S.modal=null;toast('Gasto registrado ✓');render()}
   catch(e){toast('Error: '+e.message);if(btn)btn.disabled=false}
 }
 
@@ -738,13 +738,13 @@ async function saveIngreso() {
   const pagado=document.querySelector('input[name="pagado"]:checked')?.value==='si';
   const rec={cliente,desc:document.getElementById('m-desc')?.value?.trim()||'',
     mes:parseInt(document.getElementById('m-mes')?.value),anio:parseInt(document.getElementById('m-anio')?.value)||S.iAnio,monto,pagado,autor:S.user};
-  try{const r=await ('addIngreso',rec);rec.id=r?.id||uid();S.ingresos.push(rec);S.modal=null;toast('Ingreso registrado ✓');render()}
+  try{const r=await api('addIngreso',rec);rec.id=r?.id||uid();S.ingresos.push(rec);S.modal=null;toast('Ingreso registrado ✓');render()}
   catch(e){toast('Error: '+e.message);if(btn)btn.disabled=false}
 }
 
-async function delGasto(id){if(!confirm('¿Eliminar gasto?'))return;try{await ('deleteGasto',{id});S.gastos=S.gastos.filter(g=>g.id!==id);toast('Eliminado');render()}catch(e){toast('Error: '+e.message)}}
-async function delIngreso(id){if(!confirm('¿Eliminar?'))return;try{await ('deleteIngreso',{id});S.ingresos=S.ingresos.filter(i=>i.id!==id);toast('Eliminado');render()}catch(e){toast('Error: '+e.message)}}
-async function togglePago(id){try{const r=await ('togglePago',{id});const ing=S.ingresos.find(i=>i.id===id);if(ing){ing.pagado=r?.pagado??!ing.pagado;render()}}catch(e){toast('Error: '+e.message)}}
+async function delGasto(id){if(!confirm('¿Eliminar gasto?'))return;try{await api('deleteGasto',{id});S.gastos=S.gastos.filter(g=>g.id!==id);toast('Eliminado');render()}catch(e){toast('Error: '+e.message)}}
+async function delIngreso(id){if(!confirm('¿Eliminar?'))return;try{await api('deleteIngreso',{id});S.ingresos=S.ingresos.filter(i=>i.id!==id);toast('Eliminado');render()}catch(e){toast('Error: '+e.message)}}
+async function togglePago(id){try{const r=await api('togglePago',{id});const ing=S.ingresos.find(i=>i.id===id);if(ing){ing.pagado=r?.pagado??!ing.pagado;render()}}catch(e){toast('Error: '+e.message)}}
 
 // ---- Cotizador actions ----
 async function cotCalc() {
@@ -754,7 +754,7 @@ async function cotCalc() {
     hidrolavadora:+document.getElementById('cot-hidro')?.value||0,uniformes:+document.getElementById('cot-uni')?.value||0,
     vidriosAltura:+document.getElementById('cot-vidrios')?.value||0,aseoProfundo:+document.getElementById('cot-aseo')?.value||0};
   if(datos.cantFT+datos.cantPT===0){document.getElementById('cot-result-area').innerHTML='';S.cotResult=null;return}
-  try{const r=await ('calcular',datos);S.cotResult=r;S.cotDatos=datos;document.getElementById('cot-result-area').innerHTML=renderCotResult(r)}
+  try{const r=await api('calcular',datos);S.cotResult=r;S.cotDatos=datos;document.getElementById('cot-result-area').innerHTML=renderCotResult(r)}
   catch(e){toast('Error: '+e.message)}
 }
 
@@ -763,7 +763,7 @@ async function guardarCot(opcion) {
   const datos={...S.cotDatos,empresa:document.getElementById('cot-empresa')?.value||'',
     contacto:document.getElementById('cot-contacto')?.value||'',email:document.getElementById('cot-email')?.value||'',
     telefono:document.getElementById('cot-telefono')?.value||'',vendedor:document.getElementById('cot-vendedor')?.value||''};
-  try{const r=await ('guardar',{datos,resultado:S.cotResult,comisionOpcion:opcion});toast('Cotización '+r.id+' guardada ✓')}
+  try{const r=await api('guardar',{datos,resultado:S.cotResult,comisionOpcion:opcion});toast('Cotización '+r.id+' guardada ✓')}
   catch(e){toast('Error: '+e.message)}
 }
 
