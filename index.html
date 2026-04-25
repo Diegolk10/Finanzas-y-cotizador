@@ -228,30 +228,57 @@ let chartInst = null, chartInst2 = null;
 // ============================================================
 //  API CALLS
 // ============================================================
+// Proxy iframe para comunicación cross-origin con Apps Script
+let proxyReady = false;
+let proxyFrame = null;
+const pendingCalls = {};
+let callId = 0;
+
+function initProxy() {
+  return new Promise((resolve) => {
+    if (proxyReady) { resolve(); return; }
+    proxyFrame = document.createElement('iframe');
+    proxyFrame.style.display = 'none';
+    proxyFrame.src = API_URL;
+    document.body.appendChild(proxyFrame);
+    
+    window.addEventListener('message', function handler(event) {
+      if (event.data && event.data.type === 'proxy-ready') {
+        proxyReady = true;
+        resolve();
+      }
+      if (event.data && event.data.id !== undefined && pendingCalls[event.data.id]) {
+        const { resolve: res, reject: rej } = pendingCalls[event.data.id];
+        delete pendingCalls[event.data.id];
+        const result = event.data.result;
+        if (result && result.ok !== false) {
+          res(result.data !== undefined ? result.data : result);
+        } else {
+          rej(new Error(result?.error || 'Error servidor'));
+        }
+      }
+    });
+    
+    // Timeout si el proxy no responde en 10s
+    setTimeout(() => { if (!proxyReady) resolve(); }, 10000);
+  });
+}
+
 async function api(action, data={}) {
-  // Apps Script requiere JSONP/callback para cross-origin
-  // Usamos GET con parámetros codificados
-  const payload = encodeURIComponent(JSON.stringify({ action, data }));
-  const url = API_URL + '?payload=' + payload + '&callback=cb' + Date.now();
+  if (!proxyReady) await initProxy();
+  if (!proxyFrame || !proxyFrame.contentWindow) throw new Error('Proxy no disponible');
   
   return new Promise((resolve, reject) => {
-    const callbackName = 'cb' + Date.now() + Math.random().toString(36).slice(2,6);
-    const script = document.createElement('script');
-    
-    window[callbackName] = function(result) {
-      delete window[callbackName];
-      document.head.removeChild(script);
-      if (result && result.ok) resolve(result.data);
-      else reject(new Error(result?.error || 'Error servidor'));
-    };
-    
-    script.src = API_URL + '?payload=' + payload + '&callback=' + callbackName;
-    script.onerror = () => {
-      delete window[callbackName];
-      document.head.removeChild(script);
-      reject(new Error('Error de conexión con el servidor'));
-    };
-    document.head.appendChild(script);
+    const id = ++callId;
+    pendingCalls[id] = { resolve, reject };
+    proxyFrame.contentWindow.postMessage({ id, action, data }, '*');
+    // Timeout 15s
+    setTimeout(() => {
+      if (pendingCalls[id]) {
+        delete pendingCalls[id];
+        reject(new Error('Timeout — sin respuesta del servidor'));
+      }
+    }, 15000);
   });
 }
 
