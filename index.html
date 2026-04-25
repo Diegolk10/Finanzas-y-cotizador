@@ -228,57 +228,20 @@ let chartInst = null, chartInst2 = null;
 // ============================================================
 //  API CALLS
 // ============================================================
-// Proxy iframe para comunicación cross-origin con Apps Script
-let proxyReady = false;
-let proxyFrame = null;
-const pendingCalls = {};
-let callId = 0;
-
-function initProxy() {
-  return new Promise((resolve) => {
-    if (proxyReady) { resolve(); return; }
-    proxyFrame = document.createElement('iframe');
-    proxyFrame.style.display = 'none';
-    proxyFrame.src = API_URL;
-    document.body.appendChild(proxyFrame);
-    
-    window.addEventListener('message', function handler(event) {
-      if (event.data && event.data.type === 'proxy-ready') {
-        proxyReady = true;
-        resolve();
-      }
-      if (event.data && event.data.id !== undefined && pendingCalls[event.data.id]) {
-        const { resolve: res, reject: rej } = pendingCalls[event.data.id];
-        delete pendingCalls[event.data.id];
-        const result = event.data.result;
-        if (result && result.ok !== false) {
-          res(result.data !== undefined ? result.data : result);
-        } else {
-          rej(new Error(result?.error || 'Error servidor'));
-        }
-      }
-    });
-    
-    // Timeout si el proxy no responde en 10s
-    setTimeout(() => { if (!proxyReady) resolve(); }, 10000);
-  });
-}
-
 async function api(action, data={}) {
-  if (!proxyReady) await initProxy();
-  if (!proxyFrame || !proxyFrame.contentWindow) throw new Error('Proxy no disponible');
-  
   return new Promise((resolve, reject) => {
-    const id = ++callId;
-    pendingCalls[id] = { resolve, reject };
-    proxyFrame.contentWindow.postMessage({ id, action, data }, '*');
-    // Timeout 15s
-    setTimeout(() => {
-      if (pendingCalls[id]) {
-        delete pendingCalls[id];
-        reject(new Error('Timeout — sin respuesta del servidor'));
-      }
-    }, 15000);
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res === null || res === undefined) { resolve([]); return; }
+        if (Array.isArray(res)) { resolve(res); return; }
+        if (res.ok === false) { reject(new Error(res.error || 'Error servidor')); return; }
+        if (res.data !== undefined) { resolve(res.data); return; }
+        resolve(res);
+      })
+      .withFailureHandler(e => {
+        reject(new Error(typeof e === 'string' ? e : (e.message || JSON.stringify(e))));
+      })
+      .handleAction(action, data);
   });
 }
 
