@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+/* ============================================================
+   3D GROUP — Design System
+   Navy #27367B · Red #E30713 · Sky #78ACDC
+   ============================================================ */
+:root {
+  --navy:     #27367B;
+  --navy-d:   #1a2456;
+  --red:      #E30713;
+  --sky:      #78ACDC;
+  --sky-bg:   #dce9f5;
+  --bg:       #f4f5f7;
+  --surface:  #ffffff;
+  --surface2: #eef0f4;
+  --border:   rgba(39,54,123,0.10);
+  --border2:  rgba(39,54,123,0.18);
+  --text:     #1b1f2e;
+  --text2:    #5c6070;
+  --text3:    #8f93a3;
+  --green:    #118a5f;
+  --green-bg: #e1f5ee;
+  --green-tx: #0f6e56;
+  --red-bg:   #fce8e8;
+  --red-tx:   #a32d2d;
+  --amber:    #b07316;
+  --amber-bg: #faf0d8;
+  --amber-tx: #854f0b;
+  --radius:   10px;
+  --radius-sm:6px;
+  --font:     'DM Sans', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#141620; --surface:#1c1f2e; --surface2:#252838;
+    --border:rgba(120,172,220,0.08); --border2:rgba(120,172,220,0.15);
+    --text:#e0e2ec; --text2:#8f93a3; --text3:#5c6070;
+    --green-bg:#0a3327; --green-tx:#8edcc0; --red-bg:#3d1414; --red-tx:#f09595;
+    --amber-bg:#3a2605; --amber-tx:#f0c060; --sky-bg:#1a2e4a;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.55}
+
+/* ---- APP SHELL ---- */
+.app-bar{
+  background:var(--navy);height:56px;display:flex;align-items:center;
+  padding:0 20px;position:sticky;top:0;z-index:50;gap:16px;
+}
+.app-bar-logo{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
+.app-bar-logo .stripe{width:4px;height:22px;border-radius:2px;display:flex;flex-direction:column;gap:1px}
+.stripe span:nth-child(1){flex:1;background:var(--sky);border-radius:1px}
+.stripe span:nth-child(2){flex:1;background:var(--red);border-radius:1px}
+.stripe span:nth-child(3){flex:1;background:var(--navy-d);border-radius:1px}
+.app-bar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.pill{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:500}
+.pill-diego{background:rgba(120,172,220,.25);color:#b5d4f4}
+.pill-daniel{background:rgba(29,158,117,.25);color:#8edcc0}
+.btn-bar{font-size:12px;padding:5px 12px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.7);cursor:pointer}
+.btn-bar:hover{background:rgba(255,255,255,.08);color:#fff}
+
+/* ---- NAV ---- */
+.nav{background:var(--surface);border-bottom:0.5px solid var(--border);display:flex;padding:0 20px;overflow-x:auto}
+.nav-tab{padding:11px 18px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2.5px solid transparent;white-space:nowrap;transition:color .15s}
+.nav-tab.active{color:var(--navy);border-bottom-color:var(--navy)}
+.nav-tab:hover{color:var(--text)}
+
+/* ---- CONTENT ---- */
+.content{padding:20px;max-width:960px;margin:0 auto}
+
+/* ---- METRICS ---- */
+.metrics{display:grid;gap:10px;margin-bottom:20px}
+.m4{grid-template-columns:repeat(4,1fr)} .m3{grid-template-columns:repeat(3,1fr)} .m5{grid-template-columns:repeat(5,1fr)}
+@media(max-width:700px){.m4,.m3,.m5{grid-template-columns:repeat(2,1fr)}}
+.mc{background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px}
+.mc-label{font-size:11px;color:var(--text2);margin-bottom:5px}
+.mc-value{font-size:21px;font-weight:600;letter-spacing:-.5px}
+.mc-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.c-green{color:var(--green)}.c-red{color:var(--red)}.c-amber{color:var(--amber)}.c-navy{color:var(--navy)}.c-sky{color:var(--sky)}
+
+/* ---- SECTION ---- */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.st{font-size:15px;font-weight:600}
+.btn-add{font-size:12px;padding:6px 14px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:none;cursor:pointer;color:var(--text);font-weight:500;transition:background .15s}
+.btn-add:hover{background:var(--surface2)}
+
+/* ---- FILTER ---- */
+.fb{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.fb label{font-size:12px;color:var(--text2)}
+.fb select{font-size:13px;padding:6px 10px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:var(--surface);color:var(--text)}
+
+/* ---- TABLE ---- */
+.tw{overflow-x:auto;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--text2);border-bottom:0.5px solid var(--border);background:var(--surface2);white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
+td{padding:9px 12px;border-bottom:0.5px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+
+/* ---- BADGES ---- */
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;white-space:nowrap}
+.badge-fijo{background:var(--sky-bg);color:var(--navy)}.badge-variable{background:var(--amber-bg);color:var(--amber-tx)}.badge-recurrente{background:var(--green-bg);color:var(--green-tx)}
+.badge-pagado{background:var(--green-bg);color:var(--green-tx)}.badge-pendiente{background:var(--red-bg);color:var(--red-tx)}
+.badge-diego{background:rgba(120,172,220,.15);color:var(--navy)}.badge-daniel{background:var(--green-bg);color:var(--green-tx)}
+
+/* ---- CHART CARD ---- */
+.cc{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px}
+.cw{position:relative;height:220px}
+
+/* ---- EMPTY ---- */
+.empty{padding:48px 20px;text-align:center;color:var(--text3);font-size:13px}
+
+/* ---- LOADING ---- */
+.loading{padding:60px 20px;text-align:center;color:var(--text3);font-size:13px}
+.spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- TOAST ---- */
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--navy);color:#fff;font-size:13px;padding:10px 18px;border-radius:var(--radius-sm);opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* ---- MODAL ---- */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surface);border-radius:var(--radius);border:0.5px solid var(--border2);padding:22px;width:100%;max-width:430px;max-height:92vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:18px}
+.fg{margin-bottom:13px}.fl{font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px;display:block}
+.fc{width:100%;padding:8px 10px;font-size:13px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);transition:border-color .15s}
+.fc:focus{outline:none;border-color:var(--navy)}
+.fr{display:flex;gap:10px}.fr .fg{flex:1}
+.iva-hint{font-size:11px;color:var(--text3);margin-top:4px}
+.rr{display:flex;gap:18px;flex-wrap:wrap}.ri{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.btn-cancel{padding:8px 16px;font-size:13px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:none;cursor:pointer;color:var(--text2)}
+.btn-save{padding:8px 20px;font-size:13px;font-weight:600;border-radius:var(--radius-sm);border:none;background:var(--navy);cursor:pointer;color:#fff;transition:background .15s}
+.btn-save:hover{background:var(--navy-d)}
+.btn-save:disabled{opacity:.5;cursor:not-allowed}
+.btn-del{padding:4px 9px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:none;cursor:pointer;color:var(--text3);transition:color .15s}
+.btn-del:hover{color:var(--red);border-color:var(--red-bg)}
+.btn-pago{font-size:11px;border:none;background:none;cursor:pointer;padding:0}
+
+/* ---- LOGIN SCREEN ---- */
+.login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:2rem;background:var(--navy)}
+.login-logo{font-size:32px;font-weight:700;color:#fff;letter-spacing:-.5px}
+.login-sub{font-size:14px;color:var(--sky);margin-top:-16px}
+.user-cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.user-card{width:148px;height:168px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:pointer;transition:transform .15s,border-color .15s}
+.user-card:hover{border-color:var(--sky);transform:translateY(-2px)}
+.avatar{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600}
+.av-diego{background:rgba(120,172,220,.2);color:var(--sky)}
+.av-daniel{background:rgba(29,158,117,.2);color:#8edcc0}
+.user-card span{font-size:15px;font-weight:500;color:#fff}
+
+/* ---- PIN SCREEN ---- */
+.pin-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:2rem;background:var(--navy)}
+.pin-title{font-size:18px;font-weight:600;color:#fff}
+.pin-sub{font-size:13px;color:var(--sky);margin-top:-10px}
+.pin-input{width:200px;padding:12px 16px;font-size:16px;text-align:center;border-radius:var(--radius);border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;letter-spacing:4px}
+.pin-input:focus{outline:none;border-color:var(--sky)}
+.pin-input::placeholder{letter-spacing:0;color:rgba(255,255,255,.3)}
+.pin-error{font-size:12px;color:var(--red);margin-top:-10px}
+.btn-pin{padding:10px 32px;font-size:14px;font-weight:600;border-radius:var(--radius);border:none;background:var(--sky);color:var(--navy);cursor:pointer}
+.btn-pin:hover{background:#9dc4e6}
+.btn-back{font-size:12px;color:rgba(255,255,255,.5);background:none;border:none;cursor:pointer;margin-top:8px}
+.btn-back:hover{color:#fff}
+
+/* ---- COTIZADOR ---- */
+.cot-section{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.cot-section-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;margin-bottom:14px}
+.cot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.cot-field label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px}
+.cot-field input,.cot-field select{width:100%;padding:7px 10px;font-size:13px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:var(--bg);color:var(--text)}
+.cot-result{background:var(--navy);border-radius:var(--radius);padding:20px;color:#fff}
+.cot-result-title{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--sky)}
+.cot-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.08)}
+.cot-row:last-child{border:none}
+.cot-row-label{color:rgba(255,255,255,.6)}
+.cot-row-value{font-weight:600}
+.cot-total{font-size:18px;font-weight:700;padding-top:8px;border-top:1px solid rgba(255,255,255,.15);display:flex;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  CONFIG
+// ============================================================
+// IMPORTANTE: Reemplaza esta URL con la URL de tu Web App de Apps Script
+// La obtienes en: Implementar → Gestionar implementaciones → URL
+const API_URL = 'PEGA_AQUI_TU_URL_DE_APPS_SCRIPT';
+
+const IVA    = 0.19;
+const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const AÑOS   = [2024,2025,2026,2027];
+
+// ============================================================
+//  STATE
+// ============================================================
+let S = {
+  screen:   'home',  // home | pin | dashboard | cotizador
+  user:     null,
+  tab:      'resumen',
+  gastos:   [],
+  ingresos: [],
+  loading:  false,
+  modal:    null,
+  pinError: false,
+  gMes: new Date().getMonth(), gAnio: new Date().getFullYear(),
+  iMes: new Date().getMonth(), iAnio: new Date().getFullYear(),
+  sMes: new Date().getMonth(), sAnio: new Date().getFullYear(),
+  // cotizador
+  cotParams:  null,
+  cotResult:  null,
+};
+
+let chartInst = null, chartInst2 = null;
+
+// ============================================================
+//  API CALLS
+// ============================================================
+async function api(action, data={}) {
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action, data }),
+  });
+  const json = await resp.json();
+  if (!json.ok) throw new Error(json.error || 'Error servidor');
+  return json.data;
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+const fmt  = n => '$' + Math.round(n).toLocaleString('es-CL');
+const fmtS = n => { const a=Math.abs(n); if(a>=1e6) return '$'+(n/1e6).toFixed(1)+'M'; if(a>=1e3) return '$'+(n/1e3).toFixed(0)+'K'; return fmt(n); };
+const neto    = t => Math.round(+t / (1+IVA));
+const ivaAmt  = t => Math.round(+t - neto(t));
+const netoG   = g => (g.aplicaIva===false||g.aplicaIva==='false') ? +g.monto : neto(g.monto);
+const ivaG    = g => (g.aplicaIva===false||g.aplicaIva==='false') ? 0 : ivaAmt(g.monto);
+const uid     = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+function toast(msg, dur=2500) {
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),dur);
+}
+
+// ============================================================
+//  RENDER — Main dispatcher
+// ============================================================
+function render() {
+  const app = document.getElementById('app');
+  switch(S.screen) {
+    case 'home':       app.innerHTML = renderHome(); break;
+    case 'pin':        app.innerHTML = renderPin(); break;
+    case 'dashboard':  app.innerHTML = renderDashboard(); afterRender(); break;
+    case 'cotizador':  app.innerHTML = renderCotizadorPage(); break;
+  }
+}
+
+// ============================================================
+//  HOME — Pantalla principal
+// ============================================================
+function renderHome() {
+  return `
+<div class="login-screen">
+  <div class="stripe" style="width:6px;height:32px"><span></span><span></span><span></span></div>
+  <div class="login-logo">3D Group</div>
+  <div class="login-sub" style="margin-top:-12px">Plataforma interna</div>
+  <div class="user-cards" style="margin-top:16px">
+    <div class="user-card" onclick="goToCotizador()">
+      <div style="font-size:28px">📋</div>
+      <span>Cotizador</span>
+      <span style="font-size:11px;color:var(--sky);margin-top:-8px">Vendedores</span>
+    </div>
+    <div class="user-card" onclick="goToPin()">
+      <div style="font-size:28px">📊</div>
+      <span>Finanzas</span>
+      <span style="font-size:11px;color:var(--sky);margin-top:-8px">Socios</span>
+    </div>
+  </div>
+</div>`;
+}
+
+// ============================================================
+//  PIN — Acceso socios
+// ============================================================
+function renderPin() {
+  return `
+<div class="pin-screen">
+  <div class="stripe" style="width:6px;height:28px"><span></span><span></span><span></span></div>
+  <div class="pin-title">Acceso socios</div>
+  <div class="pin-sub">Ingresa la clave para acceder al dashboard</div>
+  <input type="password" class="pin-input" id="pin-input" placeholder="Clave" maxlength="20"
+    onkeydown="if(event.key==='Enter')checkPin()">
+  ${S.pinError ? '<div class="pin-error">Clave incorrecta</div>' : ''}
+  <button class="btn-pin" onclick="checkPin()">Entrar</button>
+  <button class="btn-back" onclick="S.screen='home';S.pinError=false;render()">← Volver</button>
+</div>`;
+}
+
+// ============================================================
+//  DASHBOARD — Shell con tabs
+// ============================================================
+function renderDashboard() {
+  if (S.loading) return renderAppBar() + renderNav() + `<div class="loading"><div class="spinner"></div>Cargando datos...</div>`;
+  return renderAppBar() + renderNav() + renderModal() + '<div class="content">' + renderTab() + '</div>';
+}
+
+function renderAppBar() {
+  const u = S.user || '';
+  return `
+<div class="app-bar">
+  <div class="app-bar-logo">
+    <div class="stripe"><span></span><span></span><span></span></div>
+    3D Group
+  </div>
+  <div class="app-bar-right">
+    <span class="pill pill-${u.toLowerCase()}">${u}</span>
+    <button class="btn-bar" onclick="S.screen='home';S.user=null;render()">Salir</button>
+  </div>
+</div>`;
+}
+
+function renderNav() {
+  const tabs = [['resumen','Resumen'],['gastos','Gastos'],['ingresos','Ingresos'],['socios','Socios']];
+  return `<div class="nav">${tabs.map(([id,l])=>`<button class="nav-tab ${S.tab===id?'active':''}" onclick="setTab('${id}')">${l}</button>`).join('')}</div>`;
+}
+
+function renderTab() {
+  switch(S.tab) {
+    case 'resumen':  return renderResumen();
+    case 'gastos':   return renderGastos();
+    case 'ingresos': return renderIngresos();
+    case 'socios':   return renderSocios();
+    default: return '';
+  }
+}
+
+// ============================================================
+//  DASHBOARD TABS — Resumen
+// ============================================================
+function renderResumen() {
+  const mes=new Date().getMonth(),anio=new Date().getFullYear();
+  const gM=S.gastos.filter(g=>+g.mes===mes&&+g.anio===anio);
+  const iM=S.ingresos.filter(i=>+i.mes===mes&&+i.anio===anio);
+  const totIng=iM.reduce((s,i)=>s+ +i.monto,0), netoIng=iM.reduce((s,i)=>s+neto(i.monto),0);
+  const ivaIng=totIng-netoIng;
+  const cobrado=iM.filter(i=>i.pagado===true||i.pagado==='true').reduce((s,i)=>s+ +i.monto,0);
+  const pendientes=iM.filter(i=>!i.pagado||i.pagado==='false'||i.pagado===false).reduce((s,i)=>s+ +i.monto,0);
+  const totGasto=gM.reduce((s,g)=>s+ +g.monto,0), netoGas=gM.reduce((s,g)=>s+netoG(g),0), ivaGas=gM.reduce((s,g)=>s+ivaG(g),0);
+  const utilidad=netoIng-netoGas, ivaDeuda=ivaIng-ivaGas;
+  const flujoCaja=cobrado-totGasto-Math.max(0,ivaDeuda);
+  const gFijo=gM.filter(g=>g.tipo==='fijo').reduce((s,g)=>s+netoG(g),0);
+  const gVar=gM.filter(g=>g.tipo==='variable').reduce((s,g)=>s+netoG(g),0);
+  const gRec=gM.filter(g=>g.tipo==='recurrente').reduce((s,g)=>s+netoG(g),0);
+  const catMap={}; gM.forEach(g=>{const c=g.cat||'Otro';catMap[c]=(catMap[c]||0)+netoG(g)});
+  const catLabels=Object.keys(catMap),catData=catLabels.map(c=>catMap[c]);
+  const labels=[],ingArr=[],gasArr=[],utilArr=[];
+  for(let i=5;i>=0;i--){const d=new Date(anio,mes-i,1);const m=d.getMonth(),a=d.getFullYear();labels.push(MESES[m].slice(0,3));
+    const iN=Math.round(S.ingresos.filter(x=>+x.mes===m&&+x.anio===a).reduce((s,x)=>s+neto(x.monto),0)/1000);
+    const gN=Math.round(S.gastos.filter(x=>+x.mes===m&&+x.anio===a).reduce((s,x)=>s+netoG(x),0)/1000);
+    ingArr.push(iN);gasArr.push(gN);utilArr.push(iN-gN)}
+  const topG=[...gM].sort((a,b)=>+b.monto- +a.monto).slice(0,5);
+  const utilBrutaPct=netoIng>0?Math.round(utilidad/netoIng*100):0;
+  return `
+<div class="metrics m4" style="margin-bottom:12px">
+  <div class="mc"><div class="mc-label">Ingresos neto ${MESES[mes]}</div><div class="mc-value c-green">${fmtS(netoIng)}</div><div class="mc-sub">${fmt(totIng)} c/IVA</div></div>
+  <div class="mc"><div class="mc-label">Gastos neto ${MESES[mes]}</div><div class="mc-value c-red">${fmtS(netoGas)}</div><div class="mc-sub">${fmt(totGasto)} total</div></div>
+  <div class="mc"><div class="mc-label">Utilidad neta</div><div class="mc-value ${utilidad>=0?'c-green':'c-red'}">${fmtS(utilidad)}</div><div class="mc-sub">${utilBrutaPct}% margen</div></div>
+  <div class="mc"><div class="mc-label">Por cobrar</div><div class="mc-value c-amber">${fmtS(pendientes)}</div><div class="mc-sub">${iM.filter(i=>!i.pagado||i.pagado==='false').length} pendientes</div></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+  <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px">
+    <div class="cot-section-title">Flujo de caja estimado</div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Cobrado</span><span style="color:var(--green);font-weight:600">+${fmt(cobrado)}</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Gastos pagados</span><span style="color:var(--red);font-weight:600">−${fmt(totGasto)}</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">IVA a pagar SII</span><span style="color:var(--amber);font-weight:600">−${fmt(Math.max(0,ivaDeuda))}</span></div>
+      <div style="border-top:0.5px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span>Flujo neto</span><span class="${flujoCaja>=0?'c-green':'c-red'}">${fmt(flujoCaja)}</span></div>
+    </div>
+  </div>
+  <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px">
+    <div class="cot-section-title">Posición IVA ${MESES[mes]}</div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Débito fiscal</span><span style="font-weight:600">+${fmt(ivaIng)}</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Crédito fiscal</span><span style="font-weight:600">−${fmt(ivaGas)}</span></div>
+      <div style="border-top:0.5px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span>${ivaDeuda>=0?'A pagar SII':'Remanente'}</span><span class="${ivaDeuda>=0?'c-amber':'c-green'}">${fmt(Math.abs(ivaDeuda))}</span></div>
+    </div>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:20px">
+  <div class="cc" style="margin-bottom:0"><div style="font-size:14px;font-weight:600;margin-bottom:10px">Tendencia 6 meses (neto miles)</div><div class="cw"><canvas id="chartMain"></canvas></div></div>
+  <div class="cc" style="margin-bottom:0"><div style="font-size:14px;font-weight:600;margin-bottom:10px">Gastos por categoría</div><div style="position:relative;height:160px"><canvas id="chartDonut"></canvas></div><div id="donut-legend" style="margin-top:10px;font-size:11px"></div></div>
+</div>
+${totIng>0?`<div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px">
+  <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px"><span style="font-weight:600">Cobro ${MESES[mes]}</span><span style="color:var(--text2)">${fmt(cobrado)} de ${fmt(totIng)}</span></div>
+  <div style="background:var(--surface2);border-radius:99px;height:8px;overflow:hidden"><div style="background:var(--green);height:100%;border-radius:99px;width:${Math.min(100,Math.round(cobrado/totIng*100))}%"></div></div>
+</div>`:''}
+<div class="sh"><span class="st">Mayores gastos ${MESES[mes]}</span></div>
+${topG.length===0?`<div class="empty">Sin gastos este mes.</div>`:`<div class="tw"><table>
+<thead><tr><th>Descripción</th><th>Categoría</th><th>Tipo</th><th>Neto</th><th>Por</th></tr></thead>
+<tbody>${topG.map(g=>`<tr><td>${g.desc}</td><td>${g.cat||'-'}</td><td><span class="badge badge-${g.tipo}">${g.tipo||'-'}</span></td><td style="font-weight:600">${fmt(netoG(g))}</td><td><span class="badge badge-${(g.autor||'').toLowerCase()}">${g.autor}</span></td></tr>`).join('')}</tbody></table></div>`}
+<div style="margin-top:8px;font-size:11px;color:var(--text3);text-align:right"><a href="#" onclick="loadAll();return false" style="color:var(--navy)">↻ Recargar</a></div>
+<script>window.__cd={l:${JSON.stringify(labels)},i:${JSON.stringify(ingArr)},g:${JSON.stringify(gasArr)},u:${JSON.stringify(utilArr)},cl:${JSON.stringify(catLabels)},cd:${JSON.stringify(catData)}};<\/script>`;
+}
+
+// ============================================================
+//  DASHBOARD TABS — Gastos
+// ============================================================
+function renderGastos() {
+  const mes=S.gMes,anio=S.gAnio;
+  const lista=S.gastos.filter(g=>+g.mes===mes&&+g.anio===anio).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  const totC=lista.reduce((s,g)=>s+ +g.monto,0),totN=lista.reduce((s,g)=>s+netoG(g),0),totI=lista.reduce((s,g)=>s+ivaG(g),0);
+  return `
+<div class="fb"><label>Mes:</label><select onchange="S.gMes=+this.value;render()">${MESES.map((m,i)=>`<option value="${i}"${mes===i?' selected':''}>${m}</option>`).join('')}</select>
+<select onchange="S.gAnio=+this.value;render()">${AÑOS.map(a=>`<option value="${a}"${anio===a?' selected':''}>${a}</option>`).join('')}</select></div>
+<div class="metrics m3" style="margin-bottom:16px">
+<div class="mc"><div class="mc-label">Total pagado</div><div class="mc-value">${fmt(totC)}</div></div>
+<div class="mc"><div class="mc-label">Neto</div><div class="mc-value">${fmt(totN)}</div></div>
+<div class="mc"><div class="mc-label">IVA</div><div class="mc-value c-amber">${fmt(totI)}</div></div></div>
+<div class="sh"><span class="st">Gastos — ${MESES[mes]} ${anio}</span><button class="btn-add" onclick="S.modal='gasto';render()">+ Registrar</button></div>
+${lista.length===0?`<div class="empty">Sin gastos. Haz clic en "Registrar" para comenzar.</div>`:`<div class="tw"><table>
+<thead><tr><th>Fecha</th><th>Descripción</th><th>Cat</th><th>Tipo</th><th>Neto</th><th>IVA</th><th>Total</th><th>Por</th><th></th></tr></thead>
+<tbody>${lista.map(g=>`<tr>
+<td style="white-space:nowrap">${g.fecha||'-'}</td><td>${g.desc}</td><td>${g.cat||'-'}</td>
+<td><span class="badge badge-${g.tipo}">${g.tipo||'-'}</span></td>
+<td>${fmt(netoG(g))}</td>
+<td style="font-size:12px">${(g.aplicaIva===false||g.aplicaIva==='false')?'<span style="color:var(--text3)">Sin IVA</span>':`<span style="color:var(--text3)">${fmt(ivaG(g))}</span>`}</td>
+<td style="font-weight:600">${fmt(g.monto)}</td>
+<td><span class="badge badge-${(g.autor||'').toLowerCase()}">${g.autor}</span></td>
+<td><button class="btn-del" onclick="delGasto('${g.id}')">✕</button></td>
+</tr>`).join('')}</tbody></table></div>`}`;
+}
+
+// ============================================================
+//  DASHBOARD TABS — Ingresos
+// ============================================================
+function renderIngresos() {
+  const mes=S.iMes,anio=S.iAnio;
+  const lista=S.ingresos.filter(i=>+i.mes===mes&&+i.anio===anio).sort((a,b)=>a.cliente?.localeCompare(b.cliente));
+  const totC=lista.reduce((s,i)=>s+ +i.monto,0),totN=lista.reduce((s,i)=>s+neto(i.monto),0);
+  const cob=lista.filter(i=>i.pagado===true||i.pagado==='true').reduce((s,i)=>s+ +i.monto,0);
+  const pen=lista.filter(i=>!i.pagado||i.pagado==='false').reduce((s,i)=>s+ +i.monto,0);
+  return `
+<div class="fb"><label>Mes:</label><select onchange="S.iMes=+this.value;render()">${MESES.map((m,i)=>`<option value="${i}"${mes===i?' selected':''}>${m}</option>`).join('')}</select>
+<select onchange="S.iAnio=+this.value;render()">${AÑOS.map(a=>`<option value="${a}"${anio===a?' selected':''}>${a}</option>`).join('')}</select></div>
+<div class="metrics m5" style="margin-bottom:16px">
+<div class="mc"><div class="mc-label">Total c/IVA</div><div class="mc-value">${fmt(totC)}</div></div>
+<div class="mc"><div class="mc-label">Neto</div><div class="mc-value">${fmt(totN)}</div></div>
+<div class="mc"><div class="mc-label">IVA</div><div class="mc-value c-amber">${fmt(totC-totN)}</div></div>
+<div class="mc"><div class="mc-label">Cobrado</div><div class="mc-value c-green">${fmt(cob)}</div></div>
+<div class="mc"><div class="mc-label">Por cobrar</div><div class="mc-value c-amber">${fmt(pen)}</div></div></div>
+<div class="sh"><span class="st">Clientes — ${MESES[mes]} ${anio}</span><button class="btn-add" onclick="S.modal='ingreso';render()">+ Registrar</button></div>
+${lista.length===0?`<div class="empty">Sin ingresos. Haz clic en "Registrar" para comenzar.</div>`:`<div class="tw"><table>
+<thead><tr><th>Cliente</th><th>Desc</th><th>Neto</th><th>IVA</th><th>Total</th><th>Estado</th><th>Por</th><th></th></tr></thead>
+<tbody>${lista.map(i=>`<tr>
+<td style="font-weight:600">${i.cliente}</td><td>${i.desc||'-'}</td>
+<td>${fmt(neto(i.monto))}</td><td style="font-size:12px;color:var(--text3)">${fmt(ivaAmt(i.monto))}</td>
+<td style="font-weight:600">${fmt(i.monto)}</td>
+<td><button class="btn-pago" onclick="togglePago('${i.id}')"><span class="badge badge-${(i.pagado===true||i.pagado==='true')?'pagado':'pendiente'}">${(i.pagado===true||i.pagado==='true')?'Pagado':'Pendiente'}</span></button></td>
+<td><span class="badge badge-${(i.autor||'').toLowerCase()}">${i.autor}</span></td>
+<td><button class="btn-del" onclick="delIngreso('${i.id}')">✕</button></td>
+</tr>`).join('')}</tbody></table></div>`}`;
+}
+
+// ============================================================
+//  DASHBOARD TABS — Socios
+// ============================================================
+function renderSocios() {
+  const mes=S.sMes,anio=S.sAnio;
+  const RESERVA_PCT=0.15,PCT_DANIEL=0.613,PCT_DIEGO=0.387;
+  const SUELDO_MKT_DANIEL=1628750,SUELDO_MKT_DIEGO=1029898;
+  const gM=S.gastos.filter(g=>+g.mes===mes&&+g.anio===anio);
+  const iM=S.ingresos.filter(i=>+i.mes===mes&&+i.anio===anio);
+  const gastosSinSocios=gM.filter(g=>!((g.cat==='Sueldos'||g.cat==='Honorarios')&&(g.desc&&(g.desc.toLowerCase().includes('diego')||g.desc.toLowerCase().includes('daniel niefergold')))));
+  const ingNeto=iM.reduce((s,i)=>s+neto(i.monto),0);
+  const costoOp=gastosSinSocios.reduce((s,g)=>s+netoG(g),0);
+  const utilBruta=ingNeto-costoOp;
+  const reserva=Math.round(utilBruta*RESERVA_PCT);
+  const utilDist=Math.max(0,utilBruta-reserva);
+  let sueldoDaniel=Math.min(Math.round(utilDist*PCT_DANIEL),SUELDO_MKT_DANIEL);
+  let sueldoDiego=Math.min(Math.round(utilDist*PCT_DIEGO),SUELDO_MKT_DIEGO);
+  const totalSueldos=sueldoDaniel+sueldoDiego;
+  const remanente=Math.max(0,utilDist-totalSueldos);
+  const liquidoDaniel=Math.round(sueldoDaniel*0.822);
+  const liquidoDiego=Math.round(sueldoDiego*0.8625);
+  const utilBrutaPct=ingNeto>0?Math.round(utilBruta/ingNeto*100):0;
+  const sinDatos=gM.length===0&&iM.length===0;
+  return `
+<div class="fb"><label>Mes:</label><select onchange="S.sMes=+this.value;render()">${MESES.map((m,i)=>`<option value="${i}"${mes===i?' selected':''}>${m}</option>`).join('')}</select>
+<select onchange="S.sAnio=+this.value;render()">${AÑOS.map(a=>`<option value="${a}"${anio===a?' selected':''}>${a}</option>`).join('')}</select></div>
+${sinDatos?`<div class="empty">Sin datos para ${MESES[mes]} ${anio}.</div>`:`
+<div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px">
+<div class="cot-section-title">Cálculo distribución — ${MESES[mes]} ${anio}</div>
+<div style="display:flex;flex-direction:column;gap:9px;font-size:13px">
+<div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Ingresos neto</span><span style="font-weight:600">${fmt(ingNeto)}</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">− Costos operacionales</span><span style="color:var(--red)">${fmt(costoOp)}</span></div>
+<div style="display:flex;justify-content:space-between;border-top:0.5px solid var(--border);padding-top:9px;font-weight:600"><span>Utilidad bruta</span><span class="${utilBruta>=0?'c-green':'c-red'}">${fmt(utilBruta)} (${utilBrutaPct}%)</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">− Reserva 15%</span><span style="color:var(--amber)">−${fmt(reserva)}</span></div>
+<div style="display:flex;justify-content:space-between;border-top:0.5px solid var(--border);padding-top:9px;font-weight:600;font-size:14px"><span>Distribuible</span><span class="c-green">${fmt(utilDist)}</span></div>
+</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+<div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:18px">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+<div class="avatar av-daniel" style="width:40px;height:40px;font-size:15px">DN</div>
+<div><div style="font-weight:600;font-size:15px">Daniel</div><div style="font-size:11px;color:var(--text3)">Full time · Operaciones</div></div></div>
+<div style="display:flex;flex-direction:column;gap:7px;font-size:13px">
+<div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Sueldo (61.3%)</span><span>${fmt(sueldoDaniel)}</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Desc. legales (~17.8%)</span><span style="color:var(--red)">−${fmt(Math.round(sueldoDaniel*0.178))}</span></div>
+<div style="border-top:0.5px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span>Líquido</span><span class="c-green">${fmt(liquidoDaniel)}</span></div></div></div>
+<div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:18px">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+<div class="avatar av-diego" style="width:40px;height:40px;font-size:15px">DG</div>
+<div><div style="font-weight:600;font-size:15px">Diego</div><div style="font-size:11px;color:var(--text3)">Part time · Finanzas</div></div></div>
+<div style="display:flex;flex-direction:column;gap:7px;font-size:13px">
+<div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Sueldo (38.7%)</span><span>${fmt(sueldoDiego)}</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Ret. honorarios (13.75%)</span><span style="color:var(--red)">−${fmt(Math.round(sueldoDiego*0.1375))}</span></div>
+<div style="border-top:0.5px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span>Líquido</span><span class="c-green">${fmt(liquidoDiego)}</span></div></div></div></div>
+<div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:12px;font-size:13px">
+<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text2)">Reserva operacional</span><span style="font-weight:600;color:var(--amber)">${fmt(reserva)}</span></div>
+<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:0.5px solid var(--border)"><span style="color:var(--text2)">Utilidades retenidas</span><span style="font-weight:600;color:var(--green)">${fmt(remanente)}</span></div>
+<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:0.5px solid var(--border);font-weight:600"><span>Total en caja empresa</span><span class="c-green">${fmt(reserva+remanente)}</span></div>
+</div>`}`;
+}
+
+// ============================================================
+//  COTIZADOR PAGE
+// ============================================================
+function renderCotizadorPage() {
+  return `
+${renderAppBarCot()}
+<div class="content" style="max-width:800px">
+  <div class="cot-section">
+    <div class="cot-section-title">Datos del cliente</div>
+    <div class="cot-grid">
+      <div class="cot-field"><label>Empresa</label><input type="text" id="cot-empresa"></div>
+      <div class="cot-field"><label>Contacto</label><input type="text" id="cot-contacto"></div>
+      <div class="cot-field"><label>Email</label><input type="email" id="cot-email"></div>
+      <div class="cot-field"><label>Teléfono</label><input type="tel" id="cot-telefono"></div>
+      <div class="cot-field"><label>Vendedor</label><input type="text" id="cot-vendedor"></div>
+    </div>
+  </div>
+  <div class="cot-section">
+    <div class="cot-section-title">Personal requerido</div>
+    <div class="cot-grid">
+      <div class="cot-field"><label>Full-Time (44hrs)</label><input type="number" id="cot-ft" value="0" min="0" onchange="cotCalc()"></div>
+      <div class="cot-field"><label>Part-Time (30hrs)</label><input type="number" id="cot-pt" value="0" min="0" onchange="cotCalc()"></div>
+    </div>
+  </div>
+  <div class="cot-section">
+    <div class="cot-section-title">Insumos y equipamiento (cantidades)</div>
+    <div class="cot-grid">
+      <div class="cot-field"><label>Kit básico</label><input type="number" id="cot-ins-bas" value="0" min="0" onchange="cotCalc()"></div>
+      <div class="cot-field"><label>Kit premium</label><input type="number" id="cot-ins-pre" value="0" min="0" onchange="cotCalc()"></div>
+      <div class="cot-field"><label>Abrillantadora</label><input type="number" id="cot-abri" value="0" min="0" onchange="cotCalc()"></div>
+      <div class="cot-field"><label>Aspiradora ind.</label><input type="number" id="cot-aspi" value="0" min="0" onchange="cotCalc()"></div>
+      <div class="cot-field"><label>Hidrolavadora</label><input type="number" id="cot-hidro" value="0" min="0" onchange="cotCalc()"></div>
+      <div class="cot-field"><label>Uniformes</label><input type="number" id="cot-uni" value="0" min="0" onchange="cotCalc()"></div>
+    </div>
+  </div>
+  <div class="cot-section">
+    <div class="cot-section-title">Servicios esporádicos (cantidad de servicios/mes)</div>
+    <div class="cot-grid">
+      <div class="cot-field"><label>Vidrios en altura</label><input type="number" id="cot-vidrios" value="0" min="0" onchange="cotCalc()"></div>
+      <div class="cot-field"><label>Aseo profundo</label><input type="number" id="cot-aseo" value="0" min="0" onchange="cotCalc()"></div>
+    </div>
+  </div>
+  <div id="cot-result-area"></div>
+</div>`;
+}
+
+function renderAppBarCot() {
+  return `
+<div class="app-bar">
+  <div class="app-bar-logo">
+    <div class="stripe"><span></span><span></span><span></span></div>
+    3D Group <span style="font-weight:400;opacity:.6;margin-left:6px">Cotizador</span>
+  </div>
+  <div class="app-bar-right">
+    <button class="btn-bar" onclick="S.screen='home';render()">← Inicio</button>
+  </div>
+</div>`;
+}
+
+function renderCotResult(r) {
+  return `
+<div class="cot-result">
+  <div class="cot-result-title">Resultado de cotización</div>
+  <div class="cot-row"><span class="cot-row-label">Personal (${r.totalPersonas} personas)</span><span class="cot-row-value">${fmt(r.costoTotal)}</span></div>
+  <div class="cot-row"><span class="cot-row-label">Margen aplicado</span><span class="cot-row-value">${(r.margenAplicado*100).toFixed(0)}%</span></div>
+  <div class="cot-row"><span class="cot-row-label">Precio neto mensual</span><span class="cot-row-value">${fmt(r.precioNeto)}</span></div>
+  <div class="cot-row"><span class="cot-row-label">IVA 19%</span><span class="cot-row-value">${fmt(r.iva)}</span></div>
+  <div class="cot-total"><span>Total mensual c/IVA</span><span>${fmt(r.precioConIva)}</span></div>
+  <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)">
+    <div class="cot-row"><span class="cot-row-label">Margen bruto $</span><span class="cot-row-value" style="color:#8edcc0">${fmt(r.margenBruto)}</span></div>
+    <div class="cot-row"><span class="cot-row-label">Margen %</span><span class="cot-row-value" style="color:#8edcc0">${(r.margenPct*100).toFixed(1)}%</span></div>
+  </div>
+  <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)">
+    <div style="font-size:12px;color:var(--sky);font-weight:600;margin-bottom:8px">Comisiones vendedor</div>
+    <div class="cot-row"><span class="cot-row-label">Opción A: ${(r.comisionA_tasa*100).toFixed(0)}% mensual recurrente</span><span class="cot-row-value">${fmt(r.comisionA_mensual)}/mes</span></div>
+    <div class="cot-row"><span class="cot-row-label">Opción B: ${(r.comisionB_tasa*100).toFixed(0)}% pago único</span><span class="cot-row-value">${fmt(r.comisionB_total)}</span></div>
+    <div class="cot-row"><span class="cot-row-label">Breakeven</span><span class="cot-row-value">${r.breakeven} meses</span></div>
+  </div>
+  <div style="margin-top:14px;display:flex;gap:8px">
+    <button onclick="guardarCot('A')" class="btn-save" style="flex:1">Guardar con Opción A</button>
+    <button onclick="guardarCot('B')" class="btn-save" style="flex:1;background:var(--sky);color:var(--navy)">Guardar con Opción B</button>
+  </div>
+</div>`;
+}
+
+// ============================================================
+//  MODAL — Gastos e Ingresos
+// ============================================================
+function renderModal() {
+  if (!S.modal) return '';
+  const today=new Date().toISOString().split('T')[0];
+  if (S.modal==='gasto') return `
+<div class="modal-overlay" onclick="if(event.target===this){S.modal=null;render()}">
+<div class="modal"><div class="modal-title">Registrar gasto</div>
+<div class="fr"><div class="fg"><label class="fl">Fecha</label><input class="fc" type="date" id="m-fecha" value="${today}"></div>
+<div class="fg"><label class="fl">Mes</label><select class="fc" id="m-mes">${MESES.map((m,i)=>`<option value="${i}"${S.gMes===i?' selected':''}>${m}</option>`).join('')}</select></div></div>
+<div class="fg"><label class="fl">Descripción</label><input class="fc" type="text" id="m-desc" placeholder="Ej: Arriendo oficina"></div>
+<div class="fg"><label class="fl">Categoría</label><select class="fc" id="m-cat"><option>Arriendo</option><option>Servicios</option><option>Sueldos</option><option>Marketing</option><option>Software</option><option>Contabilidad</option><option>Logística</option><option>Ventas</option><option>Otro</option></select></div>
+<div class="fg"><label class="fl">¿Aplica IVA?</label><div class="rr">
+<label class="ri"><input type="radio" name="aplica-iva" value="si" checked onchange="ivaHint()"> Sí — c/IVA</label>
+<label class="ri"><input type="radio" name="aplica-iva" value="no" onchange="ivaHint()"> No — honorarios/sueldo</label></div></div>
+<div class="fg"><label class="fl" id="lbl-monto">Monto con IVA (CLP $)</label><input class="fc" type="number" id="m-monto" placeholder="0" oninput="ivaHint()"><div class="iva-hint" id="iva-h"></div></div>
+<div class="fg"><label class="fl">Tipo</label><div class="rr">
+<label class="ri"><input type="radio" name="tipo" value="fijo" checked> Fijo</label>
+<label class="ri"><input type="radio" name="tipo" value="variable"> Variable</label>
+<label class="ri"><input type="radio" name="tipo" value="recurrente"> Recurrente</label></div></div>
+<div class="mf"><button class="btn-cancel" onclick="S.modal=null;render()">Cancelar</button><button class="btn-save" id="btn-save" onclick="saveGasto()">Guardar</button></div>
+</div></div>`;
+
+  if (S.modal==='ingreso') return `
+<div class="modal-overlay" onclick="if(event.target===this){S.modal=null;render()}">
+<div class="modal"><div class="modal-title">Registrar ingreso</div>
+<div class="fg"><label class="fl">Cliente</label><input class="fc" type="text" id="m-cliente" placeholder="Nombre del cliente"></div>
+<div class="fg"><label class="fl">Descripción</label><input class="fc" type="text" id="m-desc" placeholder="Ej: Aseo marzo"></div>
+<div class="fr"><div class="fg"><label class="fl">Mes</label><select class="fc" id="m-mes">${MESES.map((m,i)=>`<option value="${i}"${S.iMes===i?' selected':''}>${m}</option>`).join('')}</select></div>
+<div class="fg"><label class="fl">Año</label><select class="fc" id="m-anio">${AÑOS.map(a=>`<option value="${a}"${S.iAnio===a?' selected':''}>${a}</option>`).join('')}</select></div></div>
+<div class="fg"><label class="fl">Monto c/IVA (CLP $)</label><input class="fc" type="number" id="m-monto" placeholder="0" oninput="ivaHintIng()"><div class="iva-hint" id="iva-h-i"></div></div>
+<div class="fg"><label class="fl">Estado</label><div class="rr">
+<label class="ri"><input type="radio" name="pagado" value="si"> Pagado</label>
+<label class="ri"><input type="radio" name="pagado" value="no" checked> Pendiente</label></div></div>
+<div class="mf"><button class="btn-cancel" onclick="S.modal=null;render()">Cancelar</button><button class="btn-save" id="btn-save" onclick="saveIngreso()">Guardar</button></div>
+</div></div>`;
+  return '';
+}
+
+// ============================================================
+//  CHART RENDER
+// ============================================================
+function afterRender() {
+  if (S.tab==='resumen'&&window.__cd) {
+    const {l,i:ing,g:gas,u:ut,cl,cd}=window.__cd;
+    setTimeout(()=>{
+      const c=document.getElementById('chartMain');
+      if(c){if(chartInst){chartInst.destroy();chartInst=null}
+        chartInst=new Chart(c,{type:'bar',data:{labels:l,datasets:[
+          {label:'Ing',data:ing,backgroundColor:'rgba(17,138,95,.25)',borderColor:'#118a5f',borderWidth:1.5,borderRadius:4,order:2},
+          {label:'Gas',data:gas,backgroundColor:'rgba(227,7,19,.2)',borderColor:'#E30713',borderWidth:1.5,borderRadius:4,order:2},
+          {label:'Util',data:ut,type:'line',borderColor:'#27367B',backgroundColor:'rgba(39,54,123,.12)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#27367B',fill:true,tension:.3,order:1}
+        ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.04)'}}}}});
+      }
+      const d=document.getElementById('chartDonut');
+      if(d&&cl&&cl.length>0){if(chartInst2){chartInst2.destroy();chartInst2=null}
+        const COLORS=['#27367B','#118a5f','#E30713','#b07316','#78ACDC','#533AB7','#993C1D'];
+        chartInst2=new Chart(d,{type:'doughnut',data:{labels:cl,datasets:[{data:cd,backgroundColor:COLORS.slice(0,cl.length),borderWidth:2,borderColor:'transparent',hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}});
+        const leg=document.getElementById('donut-legend');
+        if(leg)leg.innerHTML=cl.map((l,i)=>`<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:2px;background:${COLORS[i]}"></span>${l}</span><span style="font-weight:500">${fmt(cd[i])}</span></div>`).join('')}
+    },60);
+  }
+}
+
+// ============================================================
+//  ACTIONS
+// ============================================================
+function goToCotizador() { S.screen='cotizador'; render(); }
+function goToPin() { S.screen='pin'; S.pinError=false; render(); setTimeout(()=>document.getElementById('pin-input')?.focus(),100); }
+
+async function checkPin() {
+  const pin=document.getElementById('pin-input')?.value;
+  if(!pin){S.pinError=true;render();return}
+  try {
+    const r=await api('verificarPin',{pin});
+    if(r.valid){S.screen='dashboard';S.pinError=false;S.user='Diego';loadAll()}
+    else{S.pinError=true;render()}
+  } catch(e){S.pinError=true;render()}
+}
+
+function setTab(t){S.tab=t;render()}
+
+async function loadAll() {
+  S.loading=true;render();
+  try{const g=await api('getGastos');S.gastos=Array.isArray(g)?g:[]}catch(e){S.gastos=[];toast('Error gastos: '+e.message)}
+  try{const i=await api('getIngresos');S.ingresos=Array.isArray(i)?i:[]}catch(e){S.ingresos=[];toast('Error ingresos: '+e.message)}
+  S.loading=false;render();
+}
+
+function ivaHint() {
+  const v=parseFloat(document.getElementById('m-monto')?.value)||0;
+  const el=document.getElementById('iva-h');const lbl=document.getElementById('lbl-monto');
+  const ai=document.querySelector('input[name="aplica-iva"]:checked')?.value!=='no';
+  if(lbl)lbl.textContent=ai?'Monto con IVA (CLP $)':'Monto neto (CLP $)';
+  if(!el)return;if(v<=0){el.textContent='';return}
+  el.textContent=ai?`Neto: ${fmt(neto(v))} · IVA: ${fmt(ivaAmt(v))}`:'Sin IVA — se registra como neto';
+}
+function ivaHintIng(){const v=parseFloat(document.getElementById('m-monto')?.value)||0;const el=document.getElementById('iva-h-i');if(!el)return;el.textContent=v>0?`Neto: ${fmt(neto(v))} · IVA: ${fmt(ivaAmt(v))}`:''}
+
+async function saveGasto() {
+  const desc=document.getElementById('m-desc')?.value?.trim();const monto=parseFloat(document.getElementById('m-monto')?.value)||0;
+  if(!desc){toast('Ingresa descripción');return}if(!monto){toast('Ingresa monto');return}
+  const btn=document.getElementById('btn-save');if(btn)btn.disabled=true;
+  const aplicaIva=document.querySelector('input[name="aplica-iva"]:checked')?.value!=='no';
+  const rec={fecha:document.getElementById('m-fecha')?.value||'',desc,cat:document.getElementById('m-cat')?.value||'Otro',
+    mes:parseInt(document.getElementById('m-mes')?.value),anio:S.gAnio,monto,aplicaIva,
+    tipo:document.querySelector('input[name="tipo"]:checked')?.value||'fijo',autor:S.user};
+  try{const r=await api('addGasto',rec);rec.id=r?.id||uid();S.gastos.push(rec);S.modal=null;toast('Gasto registrado ✓');render()}
+  catch(e){toast('Error: '+e.message);if(btn)btn.disabled=false}
+}
+
+async function saveIngreso() {
+  const cliente=document.getElementById('m-cliente')?.value?.trim();const monto=parseFloat(document.getElementById('m-monto')?.value)||0;
+  if(!cliente){toast('Ingresa cliente');return}if(!monto){toast('Ingresa monto');return}
+  const btn=document.getElementById('btn-save');if(btn)btn.disabled=true;
+  const pagado=document.querySelector('input[name="pagado"]:checked')?.value==='si';
+  const rec={cliente,desc:document.getElementById('m-desc')?.value?.trim()||'',
+    mes:parseInt(document.getElementById('m-mes')?.value),anio:parseInt(document.getElementById('m-anio')?.value)||S.iAnio,monto,pagado,autor:S.user};
+  try{const r=await api('addIngreso',rec);rec.id=r?.id||uid();S.ingresos.push(rec);S.modal=null;toast('Ingreso registrado ✓');render()}
+  catch(e){toast('Error: '+e.message);if(btn)btn.disabled=false}
+}
+
+async function delGasto(id){if(!confirm('¿Eliminar gasto?'))return;try{await api('deleteGasto',{id});S.gastos=S.gastos.filter(g=>g.id!==id);toast('Eliminado');render()}catch(e){toast('Error: '+e.message)}}
+async function delIngreso(id){if(!confirm('¿Eliminar?'))return;try{await api('deleteIngreso',{id});S.ingresos=S.ingresos.filter(i=>i.id!==id);toast('Eliminado');render()}catch(e){toast('Error: '+e.message)}}
+async function togglePago(id){try{const r=await api('togglePago',{id});const ing=S.ingresos.find(i=>i.id===id);if(ing){ing.pagado=r?.pagado??!ing.pagado;render()}}catch(e){toast('Error: '+e.message)}}
+
+// ---- Cotizador actions ----
+async function cotCalc() {
+  const datos={cantFT:+document.getElementById('cot-ft')?.value||0,cantPT:+document.getElementById('cot-pt')?.value||0,
+    insumoBasico:+document.getElementById('cot-ins-bas')?.value||0,insumoPremium:+document.getElementById('cot-ins-pre')?.value||0,
+    abrillantadora:+document.getElementById('cot-abri')?.value||0,aspiradora:+document.getElementById('cot-aspi')?.value||0,
+    hidrolavadora:+document.getElementById('cot-hidro')?.value||0,uniformes:+document.getElementById('cot-uni')?.value||0,
+    vidriosAltura:+document.getElementById('cot-vidrios')?.value||0,aseoProfundo:+document.getElementById('cot-aseo')?.value||0};
+  if(datos.cantFT+datos.cantPT===0){document.getElementById('cot-result-area').innerHTML='';S.cotResult=null;return}
+  try{const r=await api('calcular',datos);S.cotResult=r;S.cotDatos=datos;document.getElementById('cot-result-area').innerHTML=renderCotResult(r)}
+  catch(e){toast('Error: '+e.message)}
+}
+
+async function guardarCot(opcion) {
+  if(!S.cotResult)return;
+  const datos={...S.cotDatos,empresa:document.getElementById('cot-empresa')?.value||'',
+    contacto:document.getElementById('cot-contacto')?.value||'',email:document.getElementById('cot-email')?.value||'',
+    telefono:document.getElementById('cot-telefono')?.value||'',vendedor:document.getElementById('cot-vendedor')?.value||''};
+  try{const r=await api('guardar',{datos,resultado:S.cotResult,comisionOpcion:opcion});toast('Cotización '+r.id+' guardada ✓')}
+  catch(e){toast('Error: '+e.message)}
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+render();
+</script>
+</body>
+</html>
