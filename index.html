@@ -233,8 +233,16 @@ async function api(action, data={}) {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({ action, data }),
+    redirect: 'follow',
   });
-  const json = await resp.json();
+  const text = await resp.text();
+  let json;
+  try { json = JSON.parse(text); } catch(e) {
+    // Apps Script a veces redirige y devuelve HTML — intentar extraer JSON
+    const match = text.match(/\{.*\}/s);
+    if (match) json = JSON.parse(match[0]);
+    else throw new Error('Respuesta no válida del servidor');
+  }
   if (!json.ok) throw new Error(json.error || 'Error servidor');
   return json.data;
 }
@@ -263,6 +271,7 @@ function render() {
   switch(S.screen) {
     case 'home':       app.innerHTML = renderHome(); break;
     case 'pin':        app.innerHTML = renderPin(); break;
+    case 'pin-user':   app.innerHTML = renderPinUser(); break;
     case 'dashboard':  app.innerHTML = renderDashboard(); afterRender(); break;
     case 'cotizador':  app.innerHTML = renderCotizadorPage(); break;
   }
@@ -306,6 +315,28 @@ function renderPin() {
   ${S.pinError ? '<div class="pin-error">Clave incorrecta</div>' : ''}
   <button class="btn-pin" onclick="checkPin()">Entrar</button>
   <button class="btn-back" onclick="S.screen='home';S.pinError=false;render()">← Volver</button>
+</div>`;
+}
+
+// ============================================================
+//  PIN USER — Selección de socio
+// ============================================================
+function renderPinUser() {
+  return `
+<div class="login-screen">
+  <div class="stripe" style="width:6px;height:32px"><span></span><span></span><span></span></div>
+  <div class="login-logo">Dashboard Finanzas</div>
+  <div class="login-sub" style="margin-top:-12px">¿Quién eres?</div>
+  <div class="user-cards" style="margin-top:16px">
+    <div class="user-card" onclick="selectUser('Diego')">
+      <div class="avatar av-diego">DG</div>
+      <span>Diego</span>
+    </div>
+    <div class="user-card" onclick="selectUser('Daniel')">
+      <div class="avatar av-daniel">DN</div>
+      <span>Daniel</span>
+    </div>
+  </div>
 </div>`;
 }
 
@@ -687,6 +718,7 @@ function afterRender() {
 // ============================================================
 //  ACTIONS
 // ============================================================
+function selectUser(u) { S.user=u; S.screen='dashboard'; loadAll(); }
 function goToCotizador() { S.screen='cotizador'; render(); }
 function goToPin() { S.screen='pin'; S.pinError=false; render(); setTimeout(()=>document.getElementById('pin-input')?.focus(),100); }
 
@@ -694,10 +726,11 @@ async function checkPin() {
   const pin=document.getElementById('pin-input')?.value;
   if(!pin){S.pinError=true;render();return}
   try {
-    const r=await api('verificarPin',{pin});
-    if(r.valid){S.screen='dashboard';S.pinError=false;S.user='Diego';loadAll()}
+    const r=await api('verificarPin',{pin:String(pin)});
+    console.log('PIN response:', JSON.stringify(r));
+    if(r && r.valid){S.screen='pin-user';S.pinError=false;render()}
     else{S.pinError=true;render()}
-  } catch(e){S.pinError=true;render()}
+  } catch(e){console.error('PIN error:',e);S.pinError=true;render()}
 }
 
 function setTab(t){S.tab=t;render()}
